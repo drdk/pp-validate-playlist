@@ -1,0 +1,22 @@
+{
+  "name": "validateplaylist",
+  "version": "1.0.0",
+  "description": "Compare the loaded Gallium playlist for all channels against WhatsOn, and create side-by-side HTML tables highlighting differences",
+  "main": "app.js",
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "html-tablify": "^2.0.2",
+    "moment": "^2.25.3",
+    "node-bash-title": "^0.0.2",
+    "node-rest-client": "^3.1.0",
+    "path": "^0.12.7",
+    "util": "^0.12.3",
+    "wait.for": "^0.6.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "alam@dr.dk",
+  "license": "ISC"
+}
