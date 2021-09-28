@@ -35,6 +35,12 @@ ValidatePlaylist is **not** a critical application, so SCOM alerts need not be a
 
 ---
 
+### Example output for DR1
+
+<img src="markdown/DR1_ValidatePlaylist.png" alt="logo" width="1200"/>
+
+---
+
 ## Failure resolution
 
 If the ValidatePlaylist app fails to run, first check that the application is being triggered by Task Scheduler:
