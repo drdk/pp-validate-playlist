@@ -161,7 +161,7 @@ function runMainFiber() {
 		var woEvents_2 = wait.for(getWhatsOnEventsForChannel, myChannel, nextBroadcastDay);
 		var woEvents = [...woEvents_1, ...woEvents_2];
 
-		console.log(JSON.stringify(woEvents, null, 2));
+		// console.log(JSON.stringify(woEvents, null, 2));
 
 		tsConsoleLog('- ' + woEvents.length + ' WhatsOn events' + (woEvents.length > 0 ? ', starting with ' + woEvents[0].wonStartDateTime + ' ' + woEvents[0].title : ''));
 
