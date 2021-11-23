@@ -1,5 +1,5 @@
 {
-  "name": "validateplaylist",
+  "name": "pp-validate-playlist",
   "version": "1.0.0",
   "description": "Compare the loaded Gallium playlist for all channels against WhatsOn, and create side-by-side HTML tables highlighting differences",
   "main": "app.js",

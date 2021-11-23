@@ -7,7 +7,7 @@ const setTitle = require('node-bash-title');
 const fs = require('fs');
 const util = require('util');
 
-setTitle('ValidatePlaylist');
+setTitle('pp-validate-playlist');
 
 // http.js
 var getWhatsOnEventsForChannel = require('./http.js').getWhatsOnEventsForChannel;
@@ -20,8 +20,8 @@ const wonBackgroundColor     = '#e6ffe6';
 const galliumBackgroundColor = '#e6e6ff';
 
 const app_info = {
-	loggingPath: '\\\\pp01\\system$\\Logs\\ValidatePlaylist\\',
-	monitoringPath: '\\\\pp01\\system$\\Monitoring\\ValidatePlaylist\\',
+	loggingPath: '\\\\pp01\\system$\\Logs\\pp-validate-playlist\\',
+	monitoringPath: '\\\\pp01\\system$\\Monitoring\\pp-validate-playlist\\',
 	liveEpgApiIpAddress: [
 		'10.117.120.254', // SK1 - main
 		'10.117.120.201', // SK2 - backup
@@ -88,7 +88,7 @@ const app_info = {
 	],
 };
 
-const myLastRan = moment().format('[ValidatePlaylist last ran at ]HH:mm:ss[ on ]YYYY-MM-DD');
+const myLastRan = moment().format('[pp-validate-playlist last ran at ]HH:mm:ss[ on ]YYYY-MM-DD');
 const myLogFilenameBase = app_info.loggingPath + moment().format('YYYY-MM-DD');
 
 var log_file = fs.openSync(myLogFilenameBase + '_console.log', 'a'); // Append daily log file
@@ -243,14 +243,14 @@ function runMainFiber() {
 		// ----------------------------------------------------------------------------------------------------
 		// Write the array into a json file
 		// ----------------------------------------------------------------------------------------------------
-		var myFilenameJson = app_info.monitoringPath + myChannel + '_ValidatePlaylist.json';
+		var myFilenameJson = app_info.monitoringPath + myChannel + '.json';
 		fs.writeFileSync(myFilenameJson, JSON.stringify(masterEvents, null, 2), 'utf-8');
 		tsConsoleLog('JSON information saved to ' + myFilenameJson);
 
 		// ----------------------------------------------------------------------------------------------------
 		// Create a web page
 		// ----------------------------------------------------------------------------------------------------
-		var myFilenameHtml = app_info.monitoringPath + myChannel + '_ValidatePlaylist.html';
+		var myFilenameHtml = app_info.monitoringPath + myChannel + '.html';
 		var htmlData = createHtmlPage(masterEvents, myChannel, ipAddressGallium);
 		fs.writeFileSync(myFilenameHtml, htmlData, 'utf-8');
 		tsConsoleLog('HTML table saved to ' + myFilenameHtml);
@@ -377,9 +377,9 @@ function createHtmlPage(masterEvents, myChannel, ipAddressGallium)
 					'<html lang="en">' +
 						'<head>' + 
 							'<meta charset="utf-8">' +
-							'<title>' + myChannel + ' ValidatePlaylist</title>' +
-							'<meta name="description" content="ValidatePlaylist (' + myChannel + ')">' +
-							'<meta name="author" content="ValidatePlaylist">' +
+							'<title>' + myChannel + ' pp-validate-playlist</title>' +
+							'<meta name="description" content="pp-validate-playlist (' + myChannel + ')">' +
+							'<meta name="author" content="pp-validate-playlist">' +
 							'<meta http-equiv="refresh" content="60">' + // Refresh every minute 
 							'<link rel="stylesheet" href="css/styles.css?v=1.0">' +
 						'</head>' +
