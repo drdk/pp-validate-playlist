@@ -16,7 +16,7 @@ pp-validate-playlist is **not** a critical application, so SCOM alerts need not 
 ## Application overview
 
 - **Server**: PP01
-- **Run via**: Terminal window (CMD)
+- **Run via**: Task Scheduler
 - **Triggers**: Runs periodically (every 10 minutes)
 - **Start in**: ```c:\node\pp-validate-playlist```
 - **Execute**: ```node app.js```
