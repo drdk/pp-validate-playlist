@@ -17,7 +17,7 @@ function getWhatsOnEventsForChannel(woChannel, broadcastDay, callback) {
 
 	// handling client error events
 	client.on('error', function (err) {
-		console.error('Something went wrong on the client', err);
+		console.log('Something went wrong on the client', err);
 		callback(null, []); // Return error back to the caller
 	});
 }
@@ -36,7 +36,7 @@ function getHttpCommand(cmd, callback) {
 
 	// handling client error events
 	client.on('error', function (err) {
-		console.error('Something went wrong on the client', err);
+		console.log('Something went wrong on the client', err);
 		callback(null, []); // Return error back to the caller
 	});
 }
