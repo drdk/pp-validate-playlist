@@ -35,7 +35,7 @@ validatePlaylists(appInfo);
 async function validatePlaylists(appInfo) {
 	for (let chIdx = 0; chIdx < appInfo.channel.length; chIdx++) {
 		console.log('==================================================================');
-		const myChannel = appInfo.channel[chIdx].name;
+		const channel = appInfo.channel[chIdx].name;
 
 		// ----------------------------------------------------------------------------------------------------
 		// Get Gallium events from the liveEpgAPI REST API
@@ -45,16 +45,16 @@ async function validatePlaylists(appInfo) {
 		let currentBroadcastDay = moment().format('YYYY-MM-DD'); // Default
 
 		for (let i = 0; i < appInfo.liveEpgApiIpAddress.length && galliumEvents.length == 0; i++) {
-			const cmdIpAddressGallium = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/masterIpAddress/${myChannel}`;
-			const cmdBroadcastDay     = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/currentBroadcastDay/${myChannel}`;
-			const commandEpgFull      = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/epgFull/${myChannel}`;
+			const cmdIpAddressGallium = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/masterIpAddress/${channel}`;
+			const cmdBroadcastDay     = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/currentBroadcastDay/${channel}`;
+			const commandEpgFull      = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/epgFull/${channel}`;
 
             try {
                 ipAddressGallium = await httpGetWithTimeout(cmdIpAddressGallium, { timeout: 10000, type: 'text' });
                 currentBroadcastDay = await httpGetWithTimeout(cmdBroadcastDay, { timeout: 10000, type: 'text' });
                 galliumEvents = await httpGetWithTimeout(commandEpgFull, { timeout: 10000, type: 'json' });
             } catch (err) {
-                tsConsoleLog(`WARNING: Failed to get LiveEPG information for ${myChannel} from ${appInfo.liveEpgApiIpAddress[i]}`);
+                tsConsoleLog(`WARNING: Failed to get LiveEPG information for ${channel} from ${appInfo.liveEpgApiIpAddress[i]}`);
                 // console.log(err);
             }
 
@@ -74,7 +74,7 @@ async function validatePlaylists(appInfo) {
 
 		const nextBroadcastDay = moment(currentBroadcastDay, 'YYYY-MM-DD').add(1, 'day').format('YYYY-MM-DD');
 
-		tsConsoleLog(myChannel + ': Broadcast days: ' + currentBroadcastDay + ', ' + nextBroadcastDay);
+		tsConsoleLog(channel + ': Broadcast days: ' + currentBroadcastDay + ', ' + nextBroadcastDay);
 		tsConsoleLog('- ' + galliumEvents.length + ' Gallium events' + (galliumEvents.length > 0 ? ', starting with ' + galliumEvents[0].startDate + ' ' + galliumEvents[0].startTime + ' ' + galliumEvents[0].title : ''));
 
 		// Determine if there are any gaps in the Gallium playlist
@@ -85,8 +85,8 @@ async function validatePlaylists(appInfo) {
 		// ----------------------------------------------------------------------------------------------------
 		// Get WhatsOn events for current and next broadcast day
 		// ----------------------------------------------------------------------------------------------------
-        const url_1 = `http://localhost:8001/api/schedules/${myChannel}/${currentBroadcastDay}?events=0x7&time=now`;
-        const url_2 = `http://localhost:8001/api/schedules/${myChannel}/${nextBroadcastDay}?events=0x7&time=now`;
+        const url_1 = `http://localhost:8001/api/schedules/${channel}/${currentBroadcastDay}?events=0x7&time=now`;
+        const url_2 = `http://localhost:8001/api/schedules/${channel}/${nextBroadcastDay}?events=0x7&time=now`;
         let woEvents_1 = [];
         let woEvents_2 = [];
 
@@ -94,7 +94,7 @@ async function validatePlaylists(appInfo) {
             woEvents_1 = await httpGetWithTimeout(url_1, { timeout: 10000, type: 'json' });
             woEvents_2 = await httpGetWithTimeout(url_2, { timeout: 10000, type: 'json' });
         } catch (err) {
-            tsConsoleLog(`ERROR: Failed to get day schedule for ${myChannel}`);
+            tsConsoleLog(`ERROR: Failed to get day schedule for ${channel}`);
             console.log(err);
         }
 
@@ -182,15 +182,15 @@ async function validatePlaylists(appInfo) {
 		// ----------------------------------------------------------------------------------------------------
 		// Write the array into a json file
 		// ----------------------------------------------------------------------------------------------------
-		const myFilenameJson = appInfo.monitoringPath + myChannel + '.json';
+		const myFilenameJson = appInfo.monitoringPath + channel + '.json';
 		fs.writeFileSync(myFilenameJson, JSON.stringify(masterEvents, null, 2), 'utf-8');
 		tsConsoleLog('JSON information saved to ' + myFilenameJson);
 
 		// ----------------------------------------------------------------------------------------------------
 		// Create a web page
 		// ----------------------------------------------------------------------------------------------------
-		const myFilenameHtml = appInfo.monitoringPath + myChannel + '.html';
-		const htmlData = createHtmlPage(masterEvents, myChannel, ipAddressGallium);
+		const myFilenameHtml = appInfo.monitoringPath + channel + '.html';
+		const htmlData = createHtmlPage(masterEvents, channel, ipAddressGallium);
 		fs.writeFileSync(myFilenameHtml, htmlData, 'utf-8');
 		tsConsoleLog('HTML table saved to ' + myFilenameHtml);
 	}
@@ -310,20 +310,20 @@ function getTimeFrames(durationMs) {
 	return durationMs.substr(0, 8) + ':' + ('00' + parseInt(durationMs.split('.')[1]) / 40).slice(-2);
 }
 
-function createHtmlPage(masterEvents, myChannel, ipAddressGallium)
+function createHtmlPage(masterEvents, channel, ipAddressGallium)
 {	
 	const header = 	'<!doctype html>' +
 					'<html lang="en">' +
 						'<head>' + 
 							'<meta charset="utf-8">' +
-							'<title>' + myChannel + ' pp-validate-playlist</title>' +
-							'<meta name="description" content="pp-validate-playlist (' + myChannel + ')">' +
+							'<title>' + channel + ' pp-validate-playlist</title>' +
+							'<meta name="description" content="pp-validate-playlist (' + channel + ')">' +
 							'<meta name="author" content="pp-validate-playlist">' +
 							'<meta http-equiv="refresh" content="60">' + // Refresh every minute 
 							'<link rel="stylesheet" href="css/styles.css?v=1.0">' +
 						'</head>' +
 						'<body>' +
-							'<h2>' + myChannel + ' (' + ipAddressGallium + '): WhatsOn vs - Gallium Playlist</h2>' +
+							'<h2>' + channel + ' (' + ipAddressGallium + '): WhatsOn vs - Gallium Playlist</h2>' +
 							'<p>' + myLastRan + '</p>' +
 							'<script src="js/scripts.js"></script>' +
 							'<table id="tablify" class="tablify" border="1" cellspacing="1" cellpadding="3">';
