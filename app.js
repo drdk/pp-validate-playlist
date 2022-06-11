@@ -17,41 +17,34 @@ var event_type = require('./data.js').event_type;
 const wonBackgroundColor     = '#e6ffe6';
 const galliumBackgroundColor = '#e6e6ff';
 
-const app_info = {
+const appInfo = {
 	loggingPath: '\\\\pp01\\system$\\Logs\\pp-validate-playlist\\',
 	monitoringPath: '\\\\pp01\\system$\\Monitoring\\pp-validate-playlist\\',
 	liveEpgApiIpAddress: [
 		'10.117.120.254', // SK1 - main
 		'10.117.120.201', // SK2 - backup
 	],
-	channelInfo: [
+	channel: [
 		{
-			channel: 'DR1',
-			woChannel: 'DR1',
+			name: 'DR1',
 		},
 		{
-			channel: 'DR2',
-			woChannel: 'DR2',
+			name: 'DR2',
 		},
 		{
-			channel: 'DRR',
-			woChannel: 'TVR',
+			name: 'TVR',
 		},
 		{
-			channel: 'TEGN',
-			woChannel: 'TSK',
+			name: 'TSK',
 		},
 		{
-			channel: 'EVA',
-			woChannel: 'EVA',
+			name: 'EVA',
 		},
 		{
-			channel: 'EVB',
-			woChannel: 'EVB',
+			name: 'EVB',
 		},
 		{
-			channel: 'EVC',
-			woChannel: 'EVC',
+			name: 'EVC',
 		},
 	],
 	// Enable parameters to see in the table
@@ -87,7 +80,7 @@ const app_info = {
 };
 
 const myLastRan = moment().format('[pp-validate-playlist last ran at ]HH:mm:ss[ on ]YYYY-MM-DD');
-const myLogFilenameBase = app_info.loggingPath + moment().format('YYYY-MM-DD');
+const myLogFilenameBase = appInfo.loggingPath + moment().format('YYYY-MM-DD');
 
 var log_file = fs.openSync(myLogFilenameBase + '_console.log', 'a'); // Append daily log file
 var log_stdout = process.stdout;
@@ -99,15 +92,15 @@ console.log = function (d) {
 
 console.log('\n==================================================================');
 tsConsoleLog('Starting application...');
-// console.log(JSON.stringify(app_info, null, 2));
+// console.log(JSON.stringify(appInfo, null, 2));
 
-validatePlaylists(app_info);
+validatePlaylists(appInfo);
 // Main program ends
 
-async function validatePlaylists(app_info) {
-	for (var chIdx = 0; chIdx < app_info.channelInfo.length; chIdx++) {
+async function validatePlaylists(appInfo) {
+	for (var chIdx = 0; chIdx < appInfo.channel.length; chIdx++) {
 		console.log('==================================================================');
-		var myChannel = app_info.channelInfo[chIdx].woChannel;
+		var myChannel = appInfo.channel[chIdx].name;
 
 		// ----------------------------------------------------------------------------------------------------
 		// Get Gallium events from the liveEpgAPI REST API
@@ -116,17 +109,17 @@ async function validatePlaylists(app_info) {
 		var ipAddressGallium = '';
 		var currentBroadcastDay = moment().format('YYYY-MM-DD'); // Default
 
-		for (var i = 0; i < app_info.liveEpgApiIpAddress.length && galliumEvents.length == 0; i++) {
-			const cmdIpAddressGallium = `http://${app_info.liveEpgApiIpAddress[i]}:8000/api/masterIpAddress/${myChannel}`;
-			const cmdBroadcastDay     = `http://${app_info.liveEpgApiIpAddress[i]}:8000/api/currentBroadcastDay/${myChannel}`;
-			const commandEpgFull      = `http://${app_info.liveEpgApiIpAddress[i]}:8000/api/epgFull/${myChannel}`;
+		for (var i = 0; i < appInfo.liveEpgApiIpAddress.length && galliumEvents.length == 0; i++) {
+			const cmdIpAddressGallium = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/masterIpAddress/${myChannel}`;
+			const cmdBroadcastDay     = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/currentBroadcastDay/${myChannel}`;
+			const commandEpgFull      = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/epgFull/${myChannel}`;
 
             try {
                 ipAddressGallium = await httpGetWithTimeout(cmdIpAddressGallium, { timeout: 10000, type: 'text' });
                 currentBroadcastDay = await httpGetWithTimeout(cmdBroadcastDay, { timeout: 10000, type: 'text' });
                 galliumEvents = await httpGetWithTimeout(commandEpgFull, { timeout: 10000, type: 'json' });
             } catch (err) {
-                tsConsoleLog(`WARNING: Failed to get LiveEPG information for ${myChannel} from ${app_info.liveEpgApiIpAddress[i]}`);
+                tsConsoleLog(`WARNING: Failed to get LiveEPG information for ${myChannel} from ${appInfo.liveEpgApiIpAddress[i]}`);
                 // console.log(err);
             }
 
@@ -254,14 +247,14 @@ async function validatePlaylists(app_info) {
 		// ----------------------------------------------------------------------------------------------------
 		// Write the array into a json file
 		// ----------------------------------------------------------------------------------------------------
-		var myFilenameJson = app_info.monitoringPath + myChannel + '.json';
+		var myFilenameJson = appInfo.monitoringPath + myChannel + '.json';
 		fs.writeFileSync(myFilenameJson, JSON.stringify(masterEvents, null, 2), 'utf-8');
 		tsConsoleLog('JSON information saved to ' + myFilenameJson);
 
 		// ----------------------------------------------------------------------------------------------------
 		// Create a web page
 		// ----------------------------------------------------------------------------------------------------
-		var myFilenameHtml = app_info.monitoringPath + myChannel + '.html';
+		var myFilenameHtml = appInfo.monitoringPath + myChannel + '.html';
 		var htmlData = createHtmlPage(masterEvents, myChannel, ipAddressGallium);
 		fs.writeFileSync(myFilenameHtml, htmlData, 'utf-8');
 		tsConsoleLog('HTML table saved to ' + myFilenameHtml);
@@ -401,14 +394,14 @@ function createHtmlPage(masterEvents, myChannel, ipAddressGallium)
 							'<table id="tablify" class="tablify" border="1" cellspacing="1" cellpadding="3">';
 
 	var colorGroup = 			'<colgroup>';
-	for (var i = 0; i < app_info.tableHeader.length; i++) {
-		colorGroup +=				'<col span="1" style="background-color:' + app_info.tableHeader[i].backgroundColor + '">';
+	for (var i = 0; i < appInfo.tableHeader.length; i++) {
+		colorGroup +=				'<col span="1" style="background-color:' + appInfo.tableHeader[i].backgroundColor + '">';
 	}
 	colorGroup += 			'</colgroup>';
 
 	var tableHeader =			'<tr>';
-	for (var i = 0; i < app_info.tableHeader.length; i++) {
-		tableHeader +=				'<th>' + app_info.tableHeader[i].header + '</th>';
+	for (var i = 0; i < appInfo.tableHeader.length; i++) {
+		tableHeader +=				'<th>' + appInfo.tableHeader[i].header + '</th>';
 	}
 	tableHeader +=				'</tr>';
 
@@ -418,18 +411,18 @@ function createHtmlPage(masterEvents, myChannel, ipAddressGallium)
 		const isJunction = (masterEvents[j].wonType & event_type.junction) || (masterEvents[j].galliumType & event_type.junction) ? true : false;
 
 		table += isJunction ? 	'<tr>' : isLive ? '<tr style="background-color:#efd8f6">' : '<tr style="background-color:#f2eada">';
-		for (var i = 0; i < app_info.tableHeader.length; i++) {
-			var isBold   = (app_info.tableHeader[i].name == 'wonTitle' || app_info.tableHeader[i].name == 'galliumTitle') && !isJunction;
-			var isPadded = (app_info.tableHeader[i].name == 'wonTitle' || app_info.tableHeader[i].name == 'galliumTitle') && isJunction
-			var isLeft   = (app_info.tableHeader[i].name == 'wonTitle' || app_info.tableHeader[i].name == 'galliumTitle');
+		for (var i = 0; i < appInfo.tableHeader.length; i++) {
+			var isBold   = (appInfo.tableHeader[i].name == 'wonTitle' || appInfo.tableHeader[i].name == 'galliumTitle') && !isJunction;
+			var isPadded = (appInfo.tableHeader[i].name == 'wonTitle' || appInfo.tableHeader[i].name == 'galliumTitle') && isJunction
+			var isLeft   = (appInfo.tableHeader[i].name == 'wonTitle' || appInfo.tableHeader[i].name == 'galliumTitle');
 			var isRed = false;  // Default
 			
-			if (app_info.tableHeader[i].name == 'startTimeOffset' && masterEvents[j].startTimeOffset != '') {
+			if (appInfo.tableHeader[i].name == 'startTimeOffset' && masterEvents[j].startTimeOffset != '') {
 				if (getMsFromHHMMSSFF(masterEvents[j].startTimeOffset) >= 60000) {
 					isRed = true;  // Highlight start times offset by more than 1 minute
 					isBold = true;
 				}
-			} else if (app_info.tableHeader[i].name == 'durationDiff' && masterEvents[j].durationDiff != '') {
+			} else if (appInfo.tableHeader[i].name == 'durationDiff' && masterEvents[j].durationDiff != '') {
 				if (isJunction) {
 					if (getMsFromHHMMSSFF(masterEvents[j].durationDiff) >= 10000) {
 						isRed = true;  // Highlight junction durations which are different by more than 10 seconds
@@ -438,11 +431,11 @@ function createHtmlPage(masterEvents, myChannel, ipAddressGallium)
 					isRed = true;  // Highlight program/live durations which are different
 					isBold = true;
 				}
-			} else if (app_info.tableHeader[i].name == 'wonTitle' || app_info.tableHeader[i].name == 'galliumTitle') {
+			} else if (appInfo.tableHeader[i].name == 'wonTitle' || appInfo.tableHeader[i].name == 'galliumTitle') {
 				if (masterEvents[j].wonTitle != masterEvents[j].galliumTitle) {
 					isRed = true;  // Highlight titles which are different
 				}
-			} else if (app_info.tableHeader[i].name == 'wonDuration' || app_info.tableHeader[i].name == 'galliumDuration') {
+			} else if (appInfo.tableHeader[i].name == 'wonDuration' || appInfo.tableHeader[i].name == 'galliumDuration') {
 				if (masterEvents[j].wonDuration != '' && masterEvents[j].galliumDuration != '' && 
 				    masterEvents[j].wonDuration != masterEvents[j].galliumDuration) {
 					if (isJunction) {
@@ -454,20 +447,20 @@ function createHtmlPage(masterEvents, myChannel, ipAddressGallium)
 						isBold = true;
 					}
 				}
-			} else if (app_info.tableHeader[i].name == 'wonProduction' || app_info.tableHeader[i].name == 'galliumProduction') {
+			} else if (appInfo.tableHeader[i].name == 'wonProduction' || appInfo.tableHeader[i].name == 'galliumProduction') {
 				if (masterEvents[j].wonProduction != '' && masterEvents[j].galliumProduction != '' && masterEvents[j].wonProduction != masterEvents[j].galliumProduction) {
 					isRed = true;  // Highlight productions which are different
 					isBold = true;
 				}
-			} else if (app_info.tableHeader[i].name == 'wonTxEventId' || app_info.tableHeader[i].name == 'galliumTxEventId') {
+			} else if (appInfo.tableHeader[i].name == 'wonTxEventId' || appInfo.tableHeader[i].name == 'galliumTxEventId') {
 				if (masterEvents[j].wonTxEventId != '' && masterEvents[j].galliumTxEventId != '' && masterEvents[j].wonTxEventId != masterEvents[j].galliumTxEventId) {
 					isRed = true;  // Highlight txEventIds which are different
 					isBold = isJunction ? false : true;  // Not bold for junctions, because these are often different
 				}
-			} else if (app_info.tableHeader[i].name == 'galliumGap' && masterEvents[j].galliumGap != '') {
+			} else if (appInfo.tableHeader[i].name == 'galliumGap' && masterEvents[j].galliumGap != '') {
 				isRed = true;  // Hightlight gaps in the Gallium playlist
 				isBold = true;
-			} else if (app_info.tableHeader[i].name == 'wonGap' && masterEvents[j].wonGap != '') {
+			} else if (appInfo.tableHeader[i].name == 'wonGap' && masterEvents[j].wonGap != '') {
 				isRed = true;  // Hightlight gaps in the WhatsOn playlist
 				isBold = true;
 			}
@@ -475,7 +468,7 @@ function createHtmlPage(masterEvents, myChannel, ipAddressGallium)
 			const myStyle = (isRed ? 'color:red;' : '') + (isLeft ? 'text-align:left;' : 'text-align:center;');
 
 			table += 				'<td style="' + myStyle + '">' + (isBold ? '<b>' : '') +  (isPadded ? '&nbsp;&nbsp;' : '' ) + 
-										masterEvents[j][app_info.tableHeader[i].name] + (isBold ? '</b>' : '') + '</td>';
+										masterEvents[j][appInfo.tableHeader[i].name] + (isBold ? '</b>' : '') + '</td>';
 		}
 		table +=				'</tr>';
 	}		
