@@ -8,18 +8,17 @@ const util = require('util');
 
 setTitle('pp-validate-playlist');
 
-// http.js
-const httpGetWithTimeout = require('./http.js').httpGetWithTimeout;
-
 // data.js
 const appInfo = require('./data.js').appInfo;
 const event_type = require('./data.js').event_type;
 
+// http.js
+const httpGetWithTimeout = require('./http.js').httpGetWithTimeout;
+
 const myLastRan = moment().format('[pp-validate-playlist last ran at ]HH:mm:ss[ on ]YYYY-MM-DD');
 const myLogFilenameBase = appInfo.loggingPath + moment().format('YYYY-MM-DD');
-
-var log_file = fs.openSync(myLogFilenameBase + '_console.log', 'a'); // Append daily log file
-var log_stdout = process.stdout;
+const log_file = fs.openSync(myLogFilenameBase + '_console.log', 'a'); // Append daily log file
+const log_stdout = process.stdout;
 
 console.log = function (d) {
 	fs.writeSync(log_file, util.format(d) + '\n');
@@ -34,18 +33,18 @@ validatePlaylists(appInfo);
 // Main program ends
 
 async function validatePlaylists(appInfo) {
-	for (var chIdx = 0; chIdx < appInfo.channel.length; chIdx++) {
+	for (let chIdx = 0; chIdx < appInfo.channel.length; chIdx++) {
 		console.log('==================================================================');
-		var myChannel = appInfo.channel[chIdx].name;
+		const myChannel = appInfo.channel[chIdx].name;
 
 		// ----------------------------------------------------------------------------------------------------
 		// Get Gallium events from the liveEpgAPI REST API
 		// ----------------------------------------------------------------------------------------------------
-		var galliumEvents = [];
-		var ipAddressGallium = '';
-		var currentBroadcastDay = moment().format('YYYY-MM-DD'); // Default
+		let galliumEvents = [];
+		let ipAddressGallium = '';
+		let currentBroadcastDay = moment().format('YYYY-MM-DD'); // Default
 
-		for (var i = 0; i < appInfo.liveEpgApiIpAddress.length && galliumEvents.length == 0; i++) {
+		for (let i = 0; i < appInfo.liveEpgApiIpAddress.length && galliumEvents.length == 0; i++) {
 			const cmdIpAddressGallium = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/masterIpAddress/${myChannel}`;
 			const cmdBroadcastDay     = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/currentBroadcastDay/${myChannel}`;
 			const commandEpgFull      = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/epgFull/${myChannel}`;
@@ -79,7 +78,7 @@ async function validatePlaylists(appInfo) {
 		tsConsoleLog('- ' + galliumEvents.length + ' Gallium events' + (galliumEvents.length > 0 ? ', starting with ' + galliumEvents[0].startDate + ' ' + galliumEvents[0].startTime + ' ' + galliumEvents[0].title : ''));
 
 		// Determine if there are any gaps in the Gallium playlist
-		for (var i = 0; i < galliumEvents.length; i++) {
+		for (let i = 0; i < galliumEvents.length; i++) {
 			galliumEvents[i].gap = i < galliumEvents.length - 1 ? getStartTimeOffset(galliumEvents[i].locEndDateTimeMs, galliumEvents[i + 1].locStartDateTimeMs) : '';
 		}
 
@@ -106,20 +105,20 @@ async function validatePlaylists(appInfo) {
 		tsConsoleLog('- ' + woEvents.length + ' WhatsOn events' + (woEvents.length > 0 ? ', starting with ' + woEvents[0].wonStartDateTime + ' ' + woEvents[0].title : ''));
 
 		// Determine if there are any gaps in the WhatsOn playlist
-		for (var i = 0; i < woEvents.length; i++) {
+		for (let i = 0; i < woEvents.length; i++) {
 			woEvents[i].gap = i < woEvents.length - 1
 						 	 ? getStartTimeOffset(woEvents[i].wonStopDateTime, woEvents[i + 1].wonStartDateTime)
 							 : '';
 		}
 
 		// Compare the lists and look for discontinuities
-		var masterEvents = [];
-		var gIdx_next = 0;
+		let masterEvents = [];
+		let gIdx_next = 0;
 
-		for (var i = 0; i < woEvents.length; i++) {
+		for (let i = 0; i < woEvents.length; i++) {
 			// First check if the woEvent exists in galliumEvents, checking txEventId and starting from gIdx_next
-			var gIdx = undefined;
-			for (var j = gIdx_next; j < galliumEvents.length; j++) {
+			let gIdx = undefined;
+			for (let j = gIdx_next; j < galliumEvents.length; j++) {
 				if (woEvents[i].txEventId == galliumEvents[j].txEventId) {
 					gIdx = j;
 					break; // EXIT the j loop
@@ -144,7 +143,7 @@ async function validatePlaylists(appInfo) {
 				gIdx_next++;
 			} else if (gIdx > gIdx_next) {
 				// One or more galliumEvents are out of order before woEvents[i]
-				for (var j = gIdx_next; j < gIdx; j++) {
+				for (let j = gIdx_next; j < gIdx; j++) {
 					myItem = {};
 					copyWonParameters(myItem, undefined, undefined);
 					copyGalliumParameters(myItem, galliumEvents, j);
@@ -162,7 +161,7 @@ async function validatePlaylists(appInfo) {
 		}
 
 		// We have finished looping through WhatsOn events, but there might be some Gallium events left
-		for (var j = gIdx_next; j < galliumEvents.length; j++) {
+		for (let j = gIdx_next; j < galliumEvents.length; j++) {
 			myItem = {};
 			copyWonParameters(myItem, undefined, undefined);
 			copyGalliumParameters(myItem, galliumEvents, j);
@@ -173,7 +172,7 @@ async function validatePlaylists(appInfo) {
 		// ----------------------------------------------------------------------------------------------------
 		// Calculate the startTimeOffset and durationDiff for each object in masterEvents
 		// ----------------------------------------------------------------------------------------------------
-		for (var i = 0; i < masterEvents.length; i++) {
+		for (let i = 0; i < masterEvents.length; i++) {
 			masterEvents[i].startTimeOffset = getStartTimeOffset(masterEvents[i].wonStartDateTime, masterEvents[i].galliumStartDateTime);
 			masterEvents[i].durationDiff = getDurationDiff(masterEvents[i].wonDuration, masterEvents[i].galliumDuration);
 		}
@@ -183,15 +182,15 @@ async function validatePlaylists(appInfo) {
 		// ----------------------------------------------------------------------------------------------------
 		// Write the array into a json file
 		// ----------------------------------------------------------------------------------------------------
-		var myFilenameJson = appInfo.monitoringPath + myChannel + '.json';
+		const myFilenameJson = appInfo.monitoringPath + myChannel + '.json';
 		fs.writeFileSync(myFilenameJson, JSON.stringify(masterEvents, null, 2), 'utf-8');
 		tsConsoleLog('JSON information saved to ' + myFilenameJson);
 
 		// ----------------------------------------------------------------------------------------------------
 		// Create a web page
 		// ----------------------------------------------------------------------------------------------------
-		var myFilenameHtml = appInfo.monitoringPath + myChannel + '.html';
-		var htmlData = createHtmlPage(masterEvents, myChannel, ipAddressGallium);
+		const myFilenameHtml = appInfo.monitoringPath + myChannel + '.html';
+		const htmlData = createHtmlPage(masterEvents, myChannel, ipAddressGallium);
 		fs.writeFileSync(myFilenameHtml, htmlData, 'utf-8');
 		tsConsoleLog('HTML table saved to ' + myFilenameHtml);
 	}
@@ -265,12 +264,12 @@ function copyWonParameters(myItem, woEvents, i) {
 }
 
 function getStartTimeOffset(startDateTime_1, startDateTime_2) {
-	var returnOffset = ''; // Default return
+	let returnOffset = ''; // Default return
 
 	if (startDateTime_1 != '' && startDateTime_2 != '') {
-		var moment_1 = moment(startDateTime_1, 'YYYY-MM-DD HH:mm:ss.SSS');
-		var moment_2 = moment(startDateTime_2, 'YYYY-MM-DD HH:mm:ss.SSS');
-		var offsetMs = moment_2.diff(moment_1);
+		const moment_1 = moment(startDateTime_1, 'YYYY-MM-DD HH:mm:ss.SSS');
+		const moment_2 = moment(startDateTime_2, 'YYYY-MM-DD HH:mm:ss.SSS');
+		const offsetMs = moment_2.diff(moment_1);
 
 		if (offsetMs == 0) {
 			returnOffset = '';
@@ -285,7 +284,7 @@ function getStartTimeOffset(startDateTime_1, startDateTime_2) {
 }
 
 function getDurationDiff(duration_1, duration_2) {
-	var returnDiff = ''; // Default return
+	let returnDiff = ''; // Default return
 
 	if (duration_1 != '' && duration_2 != '') {
 		const mySplit_1 = duration_1.split(':');
@@ -329,29 +328,29 @@ function createHtmlPage(masterEvents, myChannel, ipAddressGallium)
 							'<script src="js/scripts.js"></script>' +
 							'<table id="tablify" class="tablify" border="1" cellspacing="1" cellpadding="3">';
 
-	var colorGroup = 			'<colgroup>';
-	for (var i = 0; i < appInfo.tableHeader.length; i++) {
+	let colorGroup = 			'<colgroup>';
+	for (let i = 0; i < appInfo.tableHeader.length; i++) {
 		colorGroup +=				'<col span="1" style="background-color:' + appInfo.tableHeader[i].backgroundColor + '">';
 	}
 	colorGroup += 			'</colgroup>';
 
-	var tableHeader =			'<tr>';
-	for (var i = 0; i < appInfo.tableHeader.length; i++) {
+	let tableHeader =			'<tr>';
+	for (let i = 0; i < appInfo.tableHeader.length; i++) {
 		tableHeader +=				'<th>' + appInfo.tableHeader[i].header + '</th>';
 	}
 	tableHeader +=				'</tr>';
 
-	var table = '';
-	for (var j = 0; j < masterEvents.length; j++) {
+	let table = '';
+	for (let j = 0; j < masterEvents.length; j++) {
 		const isLive     = (masterEvents[j].wonType & event_type.live)     || (masterEvents[j].galliumType & event_type.live)     ? true : false;
 		const isJunction = (masterEvents[j].wonType & event_type.junction) || (masterEvents[j].galliumType & event_type.junction) ? true : false;
 
 		table += isJunction ? 	'<tr>' : isLive ? '<tr style="background-color:#efd8f6">' : '<tr style="background-color:#f2eada">';
-		for (var i = 0; i < appInfo.tableHeader.length; i++) {
-			var isBold   = (appInfo.tableHeader[i].name == 'wonTitle' || appInfo.tableHeader[i].name == 'galliumTitle') && !isJunction;
-			var isPadded = (appInfo.tableHeader[i].name == 'wonTitle' || appInfo.tableHeader[i].name == 'galliumTitle') && isJunction
-			var isLeft   = (appInfo.tableHeader[i].name == 'wonTitle' || appInfo.tableHeader[i].name == 'galliumTitle');
-			var isRed = false;  // Default
+		for (let i = 0; i < appInfo.tableHeader.length; i++) {
+			let isBold   = (appInfo.tableHeader[i].name == 'wonTitle' || appInfo.tableHeader[i].name == 'galliumTitle') && !isJunction;
+			let isPadded = (appInfo.tableHeader[i].name == 'wonTitle' || appInfo.tableHeader[i].name == 'galliumTitle') && isJunction
+			let isLeft   = (appInfo.tableHeader[i].name == 'wonTitle' || appInfo.tableHeader[i].name == 'galliumTitle');
+			let isRed = false;  // Default
 			
 			if (appInfo.tableHeader[i].name == 'startTimeOffset' && masterEvents[j].startTimeOffset != '') {
 				if (getMsFromHHMMSSFF(masterEvents[j].startTimeOffset) >= 60000) {
