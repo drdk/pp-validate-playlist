@@ -32,7 +32,7 @@ const appInfo = Object.freeze({
 		},
 	]),
 	// Enable parameters to see in the table
-	tableHeader: Object.freeze([
+	table: Object.freeze([
 		{ name: 'startTimeOffset', 			   header: 'Start Offset', 	  backgroundColor: '#ffffff' },
 		{ name: 'durationDiff', 			   header: 'Duration Offset', backgroundColor: '#ffffff' },
 		{ name: 'wonIdx', 					   header: '#', 			  backgroundColor: wonBackgroundColor },

@@ -33,9 +33,9 @@ validatePlaylists(appInfo);
 // Main program ends
 
 async function validatePlaylists(appInfo) {
-	for (let chIdx = 0; chIdx < appInfo.channel.length; chIdx++) {
+	for (const e of appInfo.channel) {
 		console.log('==================================================================');
-		const channel = appInfo.channel[chIdx].name;
+		const channel = e.name;
 
 		// ----------------------------------------------------------------------------------------------------
 		// Get Gallium events from the liveEpgAPI REST API
@@ -172,11 +172,10 @@ async function validatePlaylists(appInfo) {
 		// ----------------------------------------------------------------------------------------------------
 		// Calculate the startTimeOffset and durationDiff for each object in masterEvents
 		// ----------------------------------------------------------------------------------------------------
-		for (let i = 0; i < masterEvents.length; i++) {
-			masterEvents[i].startTimeOffset = getStartTimeOffset(masterEvents[i].wonStartDateTime, masterEvents[i].galliumStartDateTime);
-			masterEvents[i].durationDiff = getDurationDiff(masterEvents[i].wonDuration, masterEvents[i].galliumDuration);
-		}
-
+        for (const event of masterEvents) {
+			event.startTimeOffset = getStartTimeOffset(event.wonStartDateTime, event.galliumStartDateTime);
+			event.durationDiff = getDurationDiff(event.wonDuration, event.galliumDuration);
+        }
 		// console.log(JSON.stringify(masterEvents, null, 2));
 
 		// ----------------------------------------------------------------------------------------------------
@@ -329,52 +328,52 @@ function createHtmlPage(masterEvents, channel, ipAddressGallium)
 							'<table id="tablify" class="tablify" border="1" cellspacing="1" cellpadding="3">';
 
 	let colorGroup = 			'<colgroup>';
-	for (let i = 0; i < appInfo.tableHeader.length; i++) {
-		colorGroup +=				'<col span="1" style="background-color:' + appInfo.tableHeader[i].backgroundColor + '">';
-	}
+    for (const table of appInfo.table) {
+		colorGroup +=				'<col span="1" style="background-color:' + table.backgroundColor + '">';
+    }
 	colorGroup += 			'</colgroup>';
 
 	let tableHeader =			'<tr>';
-	for (let i = 0; i < appInfo.tableHeader.length; i++) {
-		tableHeader +=				'<th>' + appInfo.tableHeader[i].header + '</th>';
+    for (const table of appInfo.table) {
+		tableHeader +=				'<th>' + table.header + '</th>';
 	}
 	tableHeader +=				'</tr>';
 
-	let table = '';
-	for (let j = 0; j < masterEvents.length; j++) {
-		const isLive     = (masterEvents[j].wonType & event_type.live)     || (masterEvents[j].galliumType & event_type.live)     ? true : false;
-		const isJunction = (masterEvents[j].wonType & event_type.junction) || (masterEvents[j].galliumType & event_type.junction) ? true : false;
+	let tableBody = '';
+    for (const event of masterEvents) {
+		const isLive     = (event.wonType & event_type.live)     || (event.galliumType & event_type.live)     ? true : false;
+		const isJunction = (event.wonType & event_type.junction) || (event.galliumType & event_type.junction) ? true : false;
 
-		table += isJunction ? 	'<tr>' : isLive ? '<tr style="background-color:#efd8f6">' : '<tr style="background-color:#f2eada">';
-		for (let i = 0; i < appInfo.tableHeader.length; i++) {
-			let isBold   = (appInfo.tableHeader[i].name == 'wonTitle' || appInfo.tableHeader[i].name == 'galliumTitle') && !isJunction;
-			let isPadded = (appInfo.tableHeader[i].name == 'wonTitle' || appInfo.tableHeader[i].name == 'galliumTitle') && isJunction
-			let isLeft   = (appInfo.tableHeader[i].name == 'wonTitle' || appInfo.tableHeader[i].name == 'galliumTitle');
+		tableBody += isJunction ? 	'<tr>' : isLive ? '<tr style="background-color:#efd8f6">' : '<tr style="background-color:#f2eada">';
+        for (const table of appInfo.table) {
+			let isBold   = (table.name == 'wonTitle' || table.name == 'galliumTitle') && !isJunction;
+			let isPadded = (table.name == 'wonTitle' || table.name == 'galliumTitle') && isJunction
+			let isLeft   = (table.name == 'wonTitle' || table.name == 'galliumTitle');
 			let isRed = false;  // Default
 			
-			if (appInfo.tableHeader[i].name == 'startTimeOffset' && masterEvents[j].startTimeOffset != '') {
-				if (getMsFromHHMMSSFF(masterEvents[j].startTimeOffset) >= 60000) {
+			if (table.name == 'startTimeOffset' && event.startTimeOffset != '') {
+				if (getMsFromHHMMSSFF(event.startTimeOffset) >= 60000) {
 					isRed = true;  // Highlight start times offset by more than 1 minute
 					isBold = true;
 				}
-			} else if (appInfo.tableHeader[i].name == 'durationDiff' && masterEvents[j].durationDiff != '') {
+			} else if (table.name == 'durationDiff' && event.durationDiff != '') {
 				if (isJunction) {
-					if (getMsFromHHMMSSFF(masterEvents[j].durationDiff) >= 10000) {
+					if (getMsFromHHMMSSFF(event.durationDiff) >= 10000) {
 						isRed = true;  // Highlight junction durations which are different by more than 10 seconds
 					}
 				} else {
 					isRed = true;  // Highlight program/live durations which are different
 					isBold = true;
 				}
-			} else if (appInfo.tableHeader[i].name == 'wonTitle' || appInfo.tableHeader[i].name == 'galliumTitle') {
-				if (masterEvents[j].wonTitle != masterEvents[j].galliumTitle) {
+			} else if (table.name == 'wonTitle' || table.name == 'galliumTitle') {
+				if (event.wonTitle != event.galliumTitle) {
 					isRed = true;  // Highlight titles which are different
 				}
-			} else if (appInfo.tableHeader[i].name == 'wonDuration' || appInfo.tableHeader[i].name == 'galliumDuration') {
-				if (masterEvents[j].wonDuration != '' && masterEvents[j].galliumDuration != '' && 
-				    masterEvents[j].wonDuration != masterEvents[j].galliumDuration) {
+			} else if (table.name == 'wonDuration' || table.name == 'galliumDuration') {
+				if (event.wonDuration != '' && event.galliumDuration != '' && 
+				    event.wonDuration != event.galliumDuration) {
 					if (isJunction) {
-						if (getMsFromHHMMSSFF(masterEvents[j].durationDiff) >= 10000) {
+						if (getMsFromHHMMSSFF(event.durationDiff) >= 10000) {
 							isRed = true;  // Highlight junction durations which are different by more than 10 seconds
 						}
 					} else {
@@ -382,37 +381,37 @@ function createHtmlPage(masterEvents, channel, ipAddressGallium)
 						isBold = true;
 					}
 				}
-			} else if (appInfo.tableHeader[i].name == 'wonProduction' || appInfo.tableHeader[i].name == 'galliumProduction') {
-				if (masterEvents[j].wonProduction != '' && masterEvents[j].galliumProduction != '' && masterEvents[j].wonProduction != masterEvents[j].galliumProduction) {
+			} else if (table.name == 'wonProduction' || table.name == 'galliumProduction') {
+				if (event.wonProduction != '' && event.galliumProduction != '' && event.wonProduction != event.galliumProduction) {
 					isRed = true;  // Highlight productions which are different
 					isBold = true;
 				}
-			} else if (appInfo.tableHeader[i].name == 'wonTxEventId' || appInfo.tableHeader[i].name == 'galliumTxEventId') {
-				if (masterEvents[j].wonTxEventId != '' && masterEvents[j].galliumTxEventId != '' && masterEvents[j].wonTxEventId != masterEvents[j].galliumTxEventId) {
+			} else if (table.name == 'wonTxEventId' || table.name == 'galliumTxEventId') {
+				if (event.wonTxEventId != '' && event.galliumTxEventId != '' && event.wonTxEventId != event.galliumTxEventId) {
 					isRed = true;  // Highlight txEventIds which are different
 					isBold = isJunction ? false : true;  // Not bold for junctions, because these are often different
 				}
-			} else if (appInfo.tableHeader[i].name == 'galliumGap' && masterEvents[j].galliumGap != '') {
+			} else if (table.name == 'galliumGap' && event.galliumGap != '') {
 				isRed = true;  // Hightlight gaps in the Gallium playlist
 				isBold = true;
-			} else if (appInfo.tableHeader[i].name == 'wonGap' && masterEvents[j].wonGap != '') {
+			} else if (table.name == 'wonGap' && event.wonGap != '') {
 				isRed = true;  // Hightlight gaps in the WhatsOn playlist
 				isBold = true;
 			}
 			
 			const myStyle = (isRed ? 'color:red;' : '') + (isLeft ? 'text-align:left;' : 'text-align:center;');
 
-			table += 				'<td style="' + myStyle + '">' + (isBold ? '<b>' : '') +  (isPadded ? '&nbsp;&nbsp;' : '' ) + 
-										masterEvents[j][appInfo.tableHeader[i].name] + (isBold ? '</b>' : '') + '</td>';
+			tableBody += 		'<td style="' + myStyle + '">' + (isBold ? '<b>' : '') +  (isPadded ? '&nbsp;&nbsp;' : '' ) + 
+										event[table.name] + (isBold ? '</b>' : '') + '</td>';
 		}
-		table +=				'</tr>';
+		tableBody +=			'</tr>';
 	}		
 
 	const footer =			'</table>' +
 						'</body>' +
 					'</html>';
 
-	return (header + colorGroup + tableHeader + table + footer);	
+	return (header + colorGroup + tableHeader + tableBody + footer);	
 }
 
 function getMsFromHHMMSSFF(myTime) {
