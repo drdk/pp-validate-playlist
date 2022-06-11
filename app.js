@@ -1,7 +1,6 @@
 // --------------------------------------------------------------
 // Requirements
 // --------------------------------------------------------------
-const wait = require('wait.for');
 const moment = require('moment');
 const setTitle = require('node-bash-title');
 const fs = require('fs');
@@ -10,8 +9,7 @@ const util = require('util');
 setTitle('pp-validate-playlist');
 
 // http.js
-var getWhatsOnEventsForChannel = require('./http.js').getWhatsOnEventsForChannel;
-var getHttpCommand = require('./http.js').getHttpCommand;
+const httpGetWithTimeout = require('./http.js').httpGetWithTimeout;
 
 // data.js
 var event_type = require('./data.js').event_type;
@@ -103,11 +101,12 @@ console.log('\n=================================================================
 tsConsoleLog('Starting application...');
 // console.log(JSON.stringify(app_info, null, 2));
 
-wait.launchFiber(runMainFiber);
+validatePlaylists(app_info);
 // Main program ends
 
-function runMainFiber() {
+async function validatePlaylists(app_info) {
 	for (var chIdx = 0; chIdx < app_info.channelInfo.length; chIdx++) {
+		console.log('==================================================================');
 		var myChannel = app_info.channelInfo[chIdx].woChannel;
 
 		// ----------------------------------------------------------------------------------------------------
@@ -118,16 +117,18 @@ function runMainFiber() {
 		var currentBroadcastDay = moment().format('YYYY-MM-DD'); // Default
 
 		for (var i = 0; i < app_info.liveEpgApiIpAddress.length && galliumEvents.length == 0; i++) {
-			const cmdLiveEpgApiBase = 'http://' + app_info.liveEpgApiIpAddress[i] + ':8000/api/';
+			const cmdIpAddressGallium = `http://${app_info.liveEpgApiIpAddress[i]}:8000/api/masterIpAddress/${myChannel}`;
+			const cmdBroadcastDay     = `http://${app_info.liveEpgApiIpAddress[i]}:8000/api/currentBroadcastDay/${myChannel}`;
+			const commandEpgFull      = `http://${app_info.liveEpgApiIpAddress[i]}:8000/api/epgFull/${myChannel}`;
 
-			const cmdIpAddressGallium = cmdLiveEpgApiBase + 'masterIpAddress/' + myChannel;
-			ipAddressGallium = wait.for(getHttpCommand, cmdIpAddressGallium);
-
-			const cmdBroadcastDay = cmdLiveEpgApiBase + 'currentBroadcastDay/' + myChannel;
-			currentBroadcastDay = wait.for(getHttpCommand, cmdBroadcastDay);
-
-			const commandEpgFull = cmdLiveEpgApiBase + 'epgFull/' + myChannel;
-			galliumEvents = JSON.parse(wait.for(getHttpCommand, commandEpgFull), 'utf-8');
+            try {
+                ipAddressGallium = await httpGetWithTimeout(cmdIpAddressGallium, { timeout: 10000, type: 'text' });
+                currentBroadcastDay = await httpGetWithTimeout(cmdBroadcastDay, { timeout: 10000, type: 'text' });
+                galliumEvents = await httpGetWithTimeout(commandEpgFull, { timeout: 10000, type: 'json' });
+            } catch (err) {
+                tsConsoleLog(`WARNING: Failed to get LiveEPG information for ${myChannel} from ${app_info.liveEpgApiIpAddress[i]}`);
+                // console.log(err);
+            }
 
 			if (Array.isArray(galliumEvents) === false) {
 				tsConsoleLog(commandEpgFull + ' - ' + galliumEvents);
@@ -145,7 +146,6 @@ function runMainFiber() {
 
 		const nextBroadcastDay = moment(currentBroadcastDay, 'YYYY-MM-DD').add(1, 'day').format('YYYY-MM-DD');
 
-		console.log('==================================================================');
 		tsConsoleLog(myChannel + ': Broadcast days: ' + currentBroadcastDay + ', ' + nextBroadcastDay);
 		tsConsoleLog('- ' + galliumEvents.length + ' Gallium events' + (galliumEvents.length > 0 ? ', starting with ' + galliumEvents[0].startDate + ' ' + galliumEvents[0].startTime + ' ' + galliumEvents[0].title : ''));
 
@@ -157,9 +157,20 @@ function runMainFiber() {
 		// ----------------------------------------------------------------------------------------------------
 		// Get WhatsOn events for current and next broadcast day
 		// ----------------------------------------------------------------------------------------------------
-		var woEvents_1 = wait.for(getWhatsOnEventsForChannel, myChannel, currentBroadcastDay);
-		var woEvents_2 = wait.for(getWhatsOnEventsForChannel, myChannel, nextBroadcastDay);
-		var woEvents = [...woEvents_1, ...woEvents_2];
+        const url_1 = `http://localhost:8001/api/schedules/${myChannel}/${currentBroadcastDay}?events=0x7&time=now`;
+        const url_2 = `http://localhost:8001/api/schedules/${myChannel}/${nextBroadcastDay}?events=0x7&time=now`;
+        let woEvents_1 = [];
+        let woEvents_2 = [];
+
+        try {
+            woEvents_1 = await httpGetWithTimeout(url_1, { timeout: 10000, type: 'json' });
+            woEvents_2 = await httpGetWithTimeout(url_2, { timeout: 10000, type: 'json' });
+        } catch (err) {
+            tsConsoleLog(`ERROR: Failed to get day schedule for ${myChannel}`);
+            console.log(err);
+        }
+
+		let woEvents = [...woEvents_1, ...woEvents_2];
 
 		// console.log(JSON.stringify(woEvents, null, 2));
 

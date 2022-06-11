@@ -1,45 +1,42 @@
-var Client = require('node-rest-client').Client;
+const moment = require('moment');
+const fetch = require('node-fetch');
+const AbortController = require('abort-controller');
 
-function getWhatsOnEventsForChannel(woChannel, broadcastDay, callback) {
-	var client = new Client();
-	var getCmd = 'http://localhost:8001/api/schedules/' + woChannel + (broadcastDay == '' ? '' : '/' + broadcastDay) + '?events=0x7&time=now';
+async function httpGetWithTimeout(url, options) {
+	const { timeout = 10000, user, password, type } = options;
 
-	// http://localhost:8001/api/schedules/DR1/2020-11-17?events=0x7&time=now
+	let headers = '';
+	if (user && password) {
+		headers = { 'Authorization': 'Basic ' + Buffer.from(`${user}:${password}`, 'binary').toString('base64') };
+	}
 
-	client
-		.get(getCmd, function (data, response) {
-			callback(null, JSON.parse(data, 'utf-8')); // Return the schedule back to the caller
-		})
-		.on('error', function (err) {
-			console.log('something went wrong on the request in getWhatsOnEventsForChannel()', err);
-			callback(null, []); // Return error back to the caller
-		});
+	const controller = new AbortController(); // Create an instance of the abort controller
+	const id = setTimeout(() => controller.abort(), timeout); // Start a timing function
 
-	// handling client error events
-	client.on('error', function (err) {
-		console.log('Something went wrong on the client', err);
-		callback(null, []); // Return error back to the caller
+	const response = await fetch(url, { 
+		method: 'GET',
+		headers: headers,
+		timeout: timeout, 
+		signal: controller.signal // Connect fetch() with the abort controller
 	});
+	clearTimeout(id); // Clear the abort timing function if the request completes faster than timeout
+
+	if (!response.ok) {
+		throw new Error(`An error has occurred: ${response.status}`); // Throw an error on bad HTTP status outside the range 200-299
+	}
+
+	let result = null;
+	if (type === 'json') {
+		result = await response.json();
+	} else {
+		result = await response.text();
+	}
+	return result;
 }
 
-function getHttpCommand(cmd, callback) {
-	var client = new Client();
-
-	client
-		.get(cmd, function (data, response) {
-			callback(null, data); // Return the schedule back to the caller
-		})
-		.on('error', function (err) {
-			console.log('something went wrong on the request in getHttpCommand()', err);
-			callback(null, []); // Return error back to the caller
-		});
-
-	// handling client error events
-	client.on('error', function (err) {
-		console.log('Something went wrong on the client', err);
-		callback(null, []); // Return error back to the caller
-	});
+function tsConsoleLog(string) {
+	let timestamp = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
+	console.log(timestamp + ': ' + string);
 }
 
-module.exports.getWhatsOnEventsForChannel = getWhatsOnEventsForChannel;
-module.exports.getHttpCommand = getHttpCommand;
+module.exports.httpGetWithTimeout = httpGetWithTimeout;

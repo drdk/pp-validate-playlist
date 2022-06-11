@@ -4,14 +4,14 @@
   "description": "Compare the loaded Gallium playlist for all channels against WhatsOn, and create side-by-side HTML tables highlighting differences",
   "main": "app.js",
   "dependencies": {
+    "abort-controller": "^3.0.0",
     "fs": "0.0.1-security",
     "html-tablify": "^2.0.2",
-    "moment": "^2.25.3",
+    "moment": "^2.29.3",
     "node-bash-title": "^0.0.2",
-    "node-rest-client": "^3.1.0",
+    "node-fetch": "^2.6.7",
     "path": "^0.12.7",
-    "util": "^0.12.3",
-    "wait.for": "^0.6.6"
+    "util": "^0.12.3"
   },
   "devDependencies": {},
   "scripts": {
