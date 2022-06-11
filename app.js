@@ -101,7 +101,7 @@ console.log = function (d) {
 
 console.log('\n==================================================================');
 tsConsoleLog('Starting application...');
-console.log(JSON.stringify(app_info, null, 2));
+// console.log(JSON.stringify(app_info, null, 2));
 
 wait.launchFiber(runMainFiber);
 // Main program ends
