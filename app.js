@@ -85,8 +85,8 @@ async function validatePlaylists(appInfo) {
 		// ----------------------------------------------------------------------------------------------------
 		// Get WhatsOn events for current and next broadcast day
 		// ----------------------------------------------------------------------------------------------------
-        const url_1 = `http://localhost:8001/api/schedules/${channel}/${currentBroadcastDay}?events=0x7&time=now`;
-        const url_2 = `http://localhost:8001/api/schedules/${channel}/${nextBroadcastDay}?events=0x7&time=now`;
+        const url_1 = `http://localhost:8001/api/schedules/${channel}/${currentBroadcastDay}?events=0x7&time=now&caller=pp-validate-playlist`;
+        const url_2 = `http://localhost:8001/api/schedules/${channel}/${nextBroadcastDay}?events=0x7&time=now&caller=pp-validate-playlist`;
         let woEvents_1 = [];
         let woEvents_2 = [];
 
