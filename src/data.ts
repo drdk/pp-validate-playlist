@@ -1,14 +1,32 @@
 const wonBackgroundColor     = '#e6ffe6';
 const galliumBackgroundColor = '#e6e6ff';
 
-const appInfo = Object.freeze({
+type AppInfo = {
+    readonly loggingPath: string,
+    readonly monitoringPath: string,
+    readonly liveEpgApiIpAddress: string[],
+    readonly channel: Channel[],
+    readonly tableHeader: TableHeader[],
+}
+
+type Channel = {
+    readonly name: 'DR1' | 'DR2' | 'TVR' | 'TSK' | 'EVA' | 'EVB' | 'EVC',
+}
+
+type TableHeader = {
+    readonly name: string,
+    readonly header: string,
+    backgroundColor: string,
+}
+
+const appInfo: AppInfo = {
 	loggingPath: '\\\\pp01\\system$\\Logs\\pp-validate-playlist\\',
 	monitoringPath: '\\\\pp01\\system$\\Monitoring\\pp-validate-playlist\\',
-	liveEpgApiIpAddress: Object.freeze([
+	liveEpgApiIpAddress: [
 		'10.117.120.254', // SK1 - main
 		'10.117.120.201', // SK2 - backup
-	]),
-	channel: Object.freeze([
+	],
+	channel: [
 		{
 			name: 'DR1',
 		},
@@ -30,9 +48,9 @@ const appInfo = Object.freeze({
 		{
 			name: 'EVC',
 		},
-	]),
+	],
 	// Enable parameters to see in the table
-	table: Object.freeze([
+	tableHeader: [
 		{ name: 'startTimeOffset', 			   header: 'Start Offset', 	  backgroundColor: '#ffffff' },
 		{ name: 'durationDiff', 			   header: 'Duration Offset', backgroundColor: '#ffffff' },
 		{ name: 'wonIdx', 					   header: '#', 			  backgroundColor: wonBackgroundColor },
@@ -60,8 +78,8 @@ const appInfo = Object.freeze({
 		{ name: 'galliumGap', 				   header: 'Gap', 			  backgroundColor: galliumBackgroundColor },
 		{ name: 'galliumStartMode', 		   header: 'Start Mode', 	  backgroundColor: galliumBackgroundColor },
 		{ name: 'galliumRouterSource', 		   header: 'Source', 		  backgroundColor: galliumBackgroundColor },
-	]),
-});
+	],
+};
 
 const event_type = Object.freeze({
 	unknown:	0x0000,  
@@ -71,6 +89,5 @@ const event_type = Object.freeze({
 	mask_all:   0x0001 | 0x0002 | 0x0004
 });
 
-module.exports.appInfo = appInfo;
-module.exports.event_type = event_type;
+export { appInfo, event_type };
 

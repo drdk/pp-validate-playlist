@@ -1,30 +1,18 @@
-export {};
+import moment from 'moment';
+import * as fs from 'fs';
+import { format } from 'util';
 
-// --------------------------------------------------------------
-// Requirements
-// --------------------------------------------------------------
-const moment = require('moment');
-const setTitle = require('node-bash-title');
-const fs = require('fs');
-const util = require('util');
+import { httpGetWithTimeout } from './http.js';
+import { appInfo, event_type } from './data.js';
 
-setTitle('pp-validate-playlist');
-
-// data.js
-const appInfo = require('./data.js').appInfo;
-const event_type = require('./data.js').event_type;
-
-// http.js
-const httpGetWithTimeout = require('./http.js').httpGetWithTimeout;
-
-const myLastRan = moment().format('[pp-validate-playlist last ran at ]HH:mm:ss[ on ]YYYY-MM-DD');
-const myLogFilenameBase = appInfo.loggingPath + moment().format('YYYY-MM-DD');
-const log_file = fs.openSync(myLogFilenameBase + '_console.log', 'a'); // Append daily log file
+const lastRan = moment().format('[pp-validate-playlist last ran at ]HH:mm:ss[ on ]YYYY-MM-DD');
+const logFilename = `${appInfo.loggingPath}${moment().format('YYYY-MM-DD')}_console.log`;
+const log_file = fs.openSync(logFilename, 'a'); // Append daily log file
 const log_stdout = process.stdout;
 
-console.log = function (d) {
-	fs.writeSync(log_file, util.format(d) + '\n');
-	log_stdout.write(util.format(d) + '\n');
+console.log = (d) => {
+	fs.writeSync(log_file, format(d) + '\n');
+	log_stdout.write(format(d) + '\n');
 };
 
 console.log('\n==================================================================');
@@ -197,7 +185,7 @@ async function validatePlaylists(appInfo) {
 	}
 
 	console.log('==================================================================');
-	tsConsoleLog('Console saved to ' + myLogFilenameBase + '_console.log');
+	tsConsoleLog(`Console saved to ${logFilename}`);
 	console.log('==================================================================');
 	tsConsoleLog('Application completed successfully');
 }
@@ -325,18 +313,18 @@ function createHtmlPage(masterEvents, channel, ipAddressGallium)
 						'</head>' +
 						'<body>' +
 							'<h2>' + channel + ' (' + ipAddressGallium + '): WhatsOn vs - Gallium Playlist</h2>' +
-							'<p>' + myLastRan + '</p>' +
+							'<p>' + lastRan + '</p>' +
 							'<script src="js/scripts.js"></script>' +
 							'<table id="tablify" class="tablify" border="1" cellspacing="1" cellpadding="3">';
 
 	let colorGroup = 			'<colgroup>';
-    for (const table of appInfo.table) {
+    for (const table of appInfo.tableHeader) {
 		colorGroup +=				'<col span="1" style="background-color:' + table.backgroundColor + '">';
     }
 	colorGroup += 			'</colgroup>';
 
 	let tableHeader =			'<tr>';
-    for (const table of appInfo.table) {
+    for (const table of appInfo.tableHeader) {
 		tableHeader +=				'<th>' + table.header + '</th>';
 	}
 	tableHeader +=				'</tr>';
@@ -347,7 +335,7 @@ function createHtmlPage(masterEvents, channel, ipAddressGallium)
 		const isJunction = (event.wonType & event_type.junction) || (event.galliumType & event_type.junction) ? true : false;
 
 		tableBody += isJunction ? 	'<tr>' : isLive ? '<tr style="background-color:#efd8f6">' : '<tr style="background-color:#f2eada">';
-        for (const table of appInfo.table) {
+        for (const table of appInfo.tableHeader) {
 			let isBold   = (table.name == 'wonTitle' || table.name == 'galliumTitle') && !isJunction;
 			let isPadded = (table.name == 'wonTitle' || table.name == 'galliumTitle') && isJunction
 			let isLeft   = (table.name == 'wonTitle' || table.name == 'galliumTitle');
