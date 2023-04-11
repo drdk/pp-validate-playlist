@@ -7,7 +7,7 @@
     "abort-controller": "^3.0.0",
     "fs": "0.0.1-security",
     "html-tablify": "^2.0.2",
-    "moment": "^2.29.3",
+    "moment": "^2.29.4",
     "node-bash-title": "^0.0.2",
     "node-fetch": "^2.6.7",
     "path": "^0.12.7",
