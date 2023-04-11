@@ -1,3 +1,5 @@
+export {};
+
 // --------------------------------------------------------------
 // Requirements
 // --------------------------------------------------------------
@@ -129,14 +131,14 @@ async function validatePlaylists(appInfo) {
 
 			if (gIdx === undefined) {
 				// woEvents[i] was not found in galliumEvents[]
-				myItem = {};
+				let myItem = {};
 				copyWonParameters(myItem, woEvents, i);
 				copyGalliumParameters(myItem, undefined, undefined);
 				masterEvents.push(myItem);
 				// Do not increment gIdx_next
 			} else if (gIdx == gIdx_next) {
 				// woEvents and galliumEvents have incremented together
-				myItem = {};
+				let myItem = {};
 				copyWonParameters(myItem, woEvents, i);
 				copyGalliumParameters(myItem, galliumEvents, gIdx);
 				masterEvents.push(myItem);
@@ -144,7 +146,7 @@ async function validatePlaylists(appInfo) {
 			} else if (gIdx > gIdx_next) {
 				// One or more galliumEvents are out of order before woEvents[i]
 				for (let j = gIdx_next; j < gIdx; j++) {
-					myItem = {};
+					let myItem = {};
 					copyWonParameters(myItem, undefined, undefined);
 					copyGalliumParameters(myItem, galliumEvents, j);
 					masterEvents.push(myItem);
@@ -152,7 +154,7 @@ async function validatePlaylists(appInfo) {
 				}
 
 				// Now add the galliumEvents match with woEvents[i]
-				myItem = {};
+				let myItem = {};
 				copyWonParameters(myItem, woEvents, i);
 				copyGalliumParameters(myItem, galliumEvents, gIdx);
 				masterEvents.push(myItem);
@@ -162,7 +164,7 @@ async function validatePlaylists(appInfo) {
 
 		// We have finished looping through WhatsOn events, but there might be some Gallium events left
 		for (let j = gIdx_next; j < galliumEvents.length; j++) {
-			myItem = {};
+			let myItem = {};
 			copyWonParameters(myItem, undefined, undefined);
 			copyGalliumParameters(myItem, galliumEvents, j);
 			masterEvents.push(myItem);

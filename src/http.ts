@@ -1,3 +1,5 @@
+export {};
+
 const moment = require('moment');
 const fetch = require('node-fetch');
 const AbortController = require('abort-controller');
@@ -5,7 +7,7 @@ const AbortController = require('abort-controller');
 async function httpGetWithTimeout(url, options) {
 	const { timeout = 10000, user, password, type } = options;
 
-	let headers = '';
+	let headers = {};
 	if (user && password) {
 		headers = { 'Authorization': 'Basic ' + Buffer.from(`${user}:${password}`, 'binary').toString('base64') };
 	}

@@ -14,10 +14,11 @@
     "util": "^0.12.3"
   },
   "devDependencies": {
+    "@types/node": "^18.15.11",
     "typescript": "^5.0.4"
   },
   "scripts": {
-    "start": "node ./dist/app.js"
+    "start": "npx tsc && node ./dist/app.js"
   },
   "author": "alam@dr.dk",
   "license": "ISC"
