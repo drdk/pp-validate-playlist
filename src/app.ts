@@ -331,45 +331,46 @@ function getTimeFrames(durationMs: string): string {
 }
 
 function createHtmlPage(masterEvents: any[], channel: string, ipAddressGallium: string): string {    
-    const header =  '<!doctype html>' +
-                    '<html lang="en">' +
-                        '<head>' + 
-                            '<meta charset="utf-8">' +
-                            '<title>' + channel + ' pp-validate-playlist</title>' +
-                            '<meta name="description" content="pp-validate-playlist (' + channel + ')">' +
-                            '<meta name="author" content="pp-validate-playlist">' +
-                            '<meta http-equiv="refresh" content="60">' + // Refresh every minute 
-                            '<link rel="stylesheet" href="css/styles.css?v=1.0">' +
-                        '</head>' +
-                        '<body>' +
-                            '<h2>' + channel + ' (' + ipAddressGallium + '): WhatsOn vs - Gallium Playlist</h2>' +
-                            '<p>' + lastRan + '</p>' +
-                            '<script src="js/scripts.js"></script>' +
-                            '<table id="tablify" class="tablify" border="1" cellspacing="1" cellpadding="3">';
+    const header = 
+`<!doctype html>
+    <html lang="en">
+        <head>
+            <meta charset="utf-8">
+            <title>${channel} pp-validate-playlist</title>
+            <meta name="description" content="pp-validate-playlist (${channel})">
+            <meta name="author" content="pp-validate-playlist">
+            <meta http-equiv="refresh" content="60">
+            <link rel="stylesheet" href="css/styles.css?v=1.0">
+        </head>
+        <body>
+            <h2>${channel} (${ipAddressGallium}): WhatsOn vs - Gallium Playlist</h2>
+            <p>${lastRan}</p>
+            <script src="js/scripts.js"></script>
+            <table id="tablify" class="tablify" border="1" cellspacing="1" cellpadding="3">`;
 
-    let colorGroup =            '<colgroup>';
+    let colorGroup = `<colgroup>`;
     for (const e of appInfo.tableHeader) {
-        colorGroup +=               '<col span="1" style="background-color:' + e.backgroundColor + '">';
+        colorGroup += `<col span="1" style="background-color:${e.backgroundColor}">`;
     }
-    colorGroup +=           '</colgroup>';
+    colorGroup += `</colgroup>`;
 
-    let tableHeader =           '<tr>';
+    let tableHeader = `<tr>`;
     for (const e of appInfo.tableHeader) {
-        tableHeader +=              '<th>' + e.header + '</th>';
+        tableHeader += `<th>${e.header}</th>`;
     }
-    tableHeader +=              '</tr>';
+    tableHeader += `</tr>`;
 
-    let tableBody = '';
+    let table = '';
     for (const item of masterEvents) {
         const isLive     = (item.wonType & event_type.live)     || (item.galliumType & event_type.live)     ? true : false;
         const isJunction = (item.wonType & event_type.junction) || (item.galliumType & event_type.junction) ? true : false;
 
-        tableBody += isJunction ? '<tr>' : isLive ? '<tr style="background-color:#efd8f6">' : '<tr style="background-color:#f2eada">';
+        table += isJunction ? '<tr>' : isLive ? '<tr style="background-color:#efd8f6">' : '<tr style="background-color:#f2eada">';
         for (const e of appInfo.tableHeader) {
             let isBold   = (e.name === 'wonTitle' || e.name === 'galliumTitle') && !isJunction;
             let isPadded = (e.name === 'wonTitle' || e.name === 'galliumTitle') && isJunction
             let isLeft   = (e.name === 'wonTitle' || e.name === 'galliumTitle');
-            let isRed = false;  // Default
+            let isRed    = false;  // Default
             
             if (e.name === 'startTimeOffset' && item.startTimeOffset !== '') {
                 if (getMsFromHHMMSSFF(item.startTimeOffset) >= 60000) {
@@ -419,19 +420,19 @@ function createHtmlPage(masterEvents: any[], channel: string, ipAddressGallium: 
                 isBold = true;
             }
             
-            const myStyle = (isRed ? 'color:red;' : '') + (isLeft ? 'text-align:left;' : 'text-align:center;');
+            const myStyle = `${isRed ? 'color:red;' : ''}${isLeft ? 'text-align:left;' : 'text-align:center;'}`;
 
-            tableBody +=        '<td style="' + myStyle + '">' + (isBold ? '<b>' : '') +  (isPadded ? '&nbsp;&nbsp;' : '' ) + 
-                                        item[e.name] + (isBold ? '</b>' : '') + '</td>';
+            table += `<td style="${myStyle}">${isBold ? '<b>' : ''}${isPadded ? '&nbsp;&nbsp;' : ''}${item[e.name]}${isBold ? '</b>' : ''}</td>`;
         }
-        tableBody +=            '</tr>';
+        table += `</tr>`;
     }
 
-    const footer =          '</table>' +
-                        '</body>' +
-                    '</html>';
+    const footer = 
+`       </table>
+    </body>
+</html>`;
 
-    return (header + colorGroup + tableHeader + tableBody + footer);    
+    return `${header}${colorGroup}${tableHeader}${table}${footer}`;
 }
 
 function getMsFromHHMMSSFF(time: string): number {
