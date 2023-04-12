@@ -33,7 +33,7 @@ async function validatePlaylists(): Promise<void> {
         let ipAddressGallium = '';
         let currentBroadcastDay = dayjs().format('YYYY-MM-DD'); // Default
 
-        for (let i = 0; i < appInfo.liveEpgApiIpAddress.length && galliumEvents.length == 0; i++) {
+        for (let i = 0; i < appInfo.liveEpgApiIpAddress.length && galliumEvents.length === 0; i++) {
             const cmdIpAddressGallium = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/masterIpAddress/${channel.name}`;
             const cmdBroadcastDay     = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/currentBroadcastDay/${channel.name}`;
             const commandEpgFull      = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/epgFull/${channel.name}`;
@@ -56,7 +56,7 @@ async function validatePlaylists(): Promise<void> {
         // ----------------------------------------------------------------------------------------------------
         // currentBroadcastDay will be invalid if the length of galliumEvents is zero, or no events include the custom parameter
         // ----------------------------------------------------------------------------------------------------
-        if (galliumEvents.length == 0 || dayjs(currentBroadcastDay, 'YYYY-MM-DD', true).isValid() === false) {
+        if (galliumEvents.length === 0 || dayjs(currentBroadcastDay, 'YYYY-MM-DD', true).isValid() === false) {
             const currentDay = dayjs().format('YYYY-MM-DD');
             const currentHour = parseInt(dayjs().format('HH'));
             const bDayOffset = currentHour < 5 ? 1 : 0; // Assume broadcast day rolls-over at 05:00
@@ -366,17 +366,17 @@ function createHtmlPage(masterEvents: any[], channel: string, ipAddressGallium: 
 
         tableBody += isJunction ? '<tr>' : isLive ? '<tr style="background-color:#efd8f6">' : '<tr style="background-color:#f2eada">';
         for (const e of appInfo.tableHeader) {
-            let isBold   = (e.name == 'wonTitle' || e.name == 'galliumTitle') && !isJunction;
-            let isPadded = (e.name == 'wonTitle' || e.name == 'galliumTitle') && isJunction
-            let isLeft   = (e.name == 'wonTitle' || e.name == 'galliumTitle');
+            let isBold   = (e.name === 'wonTitle' || e.name === 'galliumTitle') && !isJunction;
+            let isPadded = (e.name === 'wonTitle' || e.name === 'galliumTitle') && isJunction
+            let isLeft   = (e.name === 'wonTitle' || e.name === 'galliumTitle');
             let isRed = false;  // Default
             
-            if (e.name == 'startTimeOffset' && item.startTimeOffset != '') {
+            if (e.name === 'startTimeOffset' && item.startTimeOffset !== '') {
                 if (getMsFromHHMMSSFF(item.startTimeOffset) >= 60000) {
                     isRed = true;  // Highlight start times offset by more than 1 minute
                     isBold = true;
                 }
-            } else if (e.name == 'durationDiff' && item.durationDiff != '') {
+            } else if (e.name === 'durationDiff' && item.durationDiff !== '') {
                 if (isJunction) {
                     if (getMsFromHHMMSSFF(item.durationDiff) >= 10000) {
                         isRed = true;  // Highlight junction durations which are different by more than 10 seconds
@@ -385,13 +385,13 @@ function createHtmlPage(masterEvents: any[], channel: string, ipAddressGallium: 
                     isRed = true;  // Highlight program/live durations which are different
                     isBold = true;
                 }
-            } else if (e.name == 'wonTitle' || e.name == 'galliumTitle') {
-                if (item.wonTitle != item.galliumTitle) {
+            } else if (e.name === 'wonTitle' || e.name === 'galliumTitle') {
+                if (item.wonTitle !== item.galliumTitle) {
                     isRed = true;  // Highlight titles which are different
                 }
-            } else if (e.name == 'wonDuration' || e.name == 'galliumDuration') {
-                if (item.wonDuration != '' && item.galliumDuration != '' && 
-                    item.wonDuration != item.galliumDuration) {
+            } else if (e.name === 'wonDuration' || e.name === 'galliumDuration') {
+                if (item.wonDuration !== '' && item.galliumDuration !== '' && 
+                    item.wonDuration !== item.galliumDuration) {
                     if (isJunction) {
                         if (getMsFromHHMMSSFF(item.durationDiff) >= 10000) {
                             isRed = true;  // Highlight junction durations which are different by more than 10 seconds
@@ -401,20 +401,20 @@ function createHtmlPage(masterEvents: any[], channel: string, ipAddressGallium: 
                         isBold = true;
                     }
                 }
-            } else if (e.name == 'wonProduction' || e.name == 'galliumProduction') {
-                if (item.wonProduction != '' && item.galliumProduction != '' && item.wonProduction != item.galliumProduction) {
+            } else if (e.name === 'wonProduction' || e.name === 'galliumProduction') {
+                if (item.wonProduction !== '' && item.galliumProduction !== '' && item.wonProduction !== item.galliumProduction) {
                     isRed = true;  // Highlight productions which are different
                     isBold = true;
                 }
-            } else if (e.name == 'wonTxEventId' || e.name == 'galliumTxEventId') {
-                if (item.wonTxEventId != '' && item.galliumTxEventId != '' && item.wonTxEventId != item.galliumTxEventId) {
+            } else if (e.name === 'wonTxEventId' || e.name === 'galliumTxEventId') {
+                if (item.wonTxEventId !== '' && item.galliumTxEventId !== '' && item.wonTxEventId !== item.galliumTxEventId) {
                     isRed = true;  // Highlight txEventIds which are different
                     isBold = isJunction ? false : true;  // Not bold for junctions, because these are often different
                 }
-            } else if (e.name == 'galliumGap' && item.galliumGap != '') {
+            } else if (e.name === 'galliumGap' && item.galliumGap !== '') {
                 isRed = true;  // Hightlight gaps in the Gallium playlist
                 isBold = true;
-            } else if (e.name == 'wonGap' && item.wonGap != '') {
+            } else if (e.name === 'wonGap' && item.wonGap !== '') {
                 isRed = true;  // Hightlight gaps in the WhatsOn playlist
                 isBold = true;
             }
