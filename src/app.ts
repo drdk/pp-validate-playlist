@@ -22,7 +22,7 @@ tsConsoleLog('Starting application...');
 validatePlaylists();
 // Main program ends
 
-async function validatePlaylists() {
+async function validatePlaylists(): Promise<void> {
     for (const channel of appInfo.channel) {
         console.log('==================================================================');
 
