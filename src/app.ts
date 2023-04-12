@@ -1,12 +1,12 @@
-import moment from 'moment';
+import dayjs from 'dayjs';
 import * as fs from 'fs';
 import { format } from 'util';
 
 import { httpGetWithTimeout } from './http.js';
 import { appInfo, event_type, Item } from './data.js';
 
-const lastRan = moment().format('[pp-validate-playlist last ran at ]HH:mm:ss[ on ]YYYY-MM-DD');
-const logFilename = `${appInfo.loggingPath}${moment().format('YYYY-MM-DD')}_console.log`;
+const lastRan = dayjs().format('[pp-validate-playlist last ran at ]HH:mm:ss[ on ]YYYY-MM-DD');
+const logFilename = `${appInfo.loggingPath}${dayjs().format('YYYY-MM-DD')}_console.log`;
 const log_file = fs.openSync(logFilename, 'a'); // Append daily log file
 const log_stdout = process.stdout;
 
@@ -31,7 +31,7 @@ async function validatePlaylists(): Promise<void> {
         // ----------------------------------------------------------------------------------------------------
         let galliumEvents = [];
         let ipAddressGallium = '';
-        let currentBroadcastDay = moment().format('YYYY-MM-DD'); // Default
+        let currentBroadcastDay = dayjs().format('YYYY-MM-DD'); // Default
 
         for (let i = 0; i < appInfo.liveEpgApiIpAddress.length && galliumEvents.length == 0; i++) {
             const cmdIpAddressGallium = `http://${appInfo.liveEpgApiIpAddress[i]}:8000/api/masterIpAddress/${channel.name}`;
@@ -56,17 +56,17 @@ async function validatePlaylists(): Promise<void> {
         // ----------------------------------------------------------------------------------------------------
         // currentBroadcastDay will be invalid if the length of galliumEvents is zero, or no events include the custom parameter
         // ----------------------------------------------------------------------------------------------------
-        if (galliumEvents.length == 0 || moment(currentBroadcastDay, 'YYYY-MM-DD', true).isValid() === false) {
-            const currentDay = moment().format('YYYY-MM-DD');
-            const currentHour = parseInt(moment().format('HH'));
+        if (galliumEvents.length == 0 || dayjs(currentBroadcastDay, 'YYYY-MM-DD', true).isValid() === false) {
+            const currentDay = dayjs().format('YYYY-MM-DD');
+            const currentHour = parseInt(dayjs().format('HH'));
             const bDayOffset = currentHour < 5 ? 1 : 0; // Assume broadcast day rolls-over at 05:00
-            currentBroadcastDay = moment(currentDay, 'YYYY-MM-DD').subtract(bDayOffset, 'day').format('YYYY-MM-DD');
+            currentBroadcastDay = dayjs(currentDay, 'YYYY-MM-DD').subtract(bDayOffset, 'day').format('YYYY-MM-DD');
         }
 
-        const nextBroadcastDay = moment(currentBroadcastDay, 'YYYY-MM-DD').add(1, 'day').format('YYYY-MM-DD');
+        const nextBroadcastDay = dayjs(currentBroadcastDay, 'YYYY-MM-DD').add(1, 'day').format('YYYY-MM-DD');
 
-        tsConsoleLog(channel.name + ': Broadcast days: ' + currentBroadcastDay + ', ' + nextBroadcastDay);
-        tsConsoleLog('- ' + galliumEvents.length + ' Gallium events' + (galliumEvents.length > 0 ? ', starting with ' + galliumEvents[0].startDate + ' ' + galliumEvents[0].startTime + ' ' + galliumEvents[0].title : ''));
+        tsConsoleLog(`${channel.name}: Broadcast days: ${currentBroadcastDay}, ${nextBroadcastDay}`);
+        tsConsoleLog(`- ${galliumEvents.length} Gallium events${galliumEvents.length > 0 ? ', starting with ' + galliumEvents[0].startDate + ' ' + galliumEvents[0].startTime + ' ' + galliumEvents[0].title : ''}`);
 
         // ----------------------------------------------------------------------------------------------------
         // Determine if there are any gaps in the Gallium playlist
@@ -274,7 +274,7 @@ function getStartTimeOffset(startDateTime_1: string, startDateTime_2: string): s
     let returnOffset = ''; // Default return
 
     if (startDateTime_1 !== '' && startDateTime_2 !== '') {
-        const offsetMs = moment(startDateTime_2).diff(moment(startDateTime_1));
+        const offsetMs = dayjs(startDateTime_2).diff(dayjs(startDateTime_1));
 
         if (offsetMs === 0) {
             returnOffset = '';
@@ -445,6 +445,6 @@ function getMsFromHHMMSSFF(time: string): number {
 }
 
 function tsConsoleLog(string: string): void {
-    let timestamp = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
+    let timestamp = dayjs().format('YYYY-MM-DD HH:mm:ss.SSS');
     console.log(timestamp + ': ' + string);
 }
