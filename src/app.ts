@@ -33,15 +33,13 @@ async function validatePlaylists(): Promise<void> {
         let ipAddressGallium = ''
         let currentBroadcastDay = dayjs().format('YYYY-MM-DD') // Default
 
-        for (let i = 0; i < appInfo.liveSchedule_ipAddress.length && galliumEvents.length === 0; i++) {
-            const ipAddress = appInfo.liveSchedule_ipAddress[i]
-
+        for (const ipAddress of appInfo.liveSchedule_ipAddress) {
             try {
                 ipAddressGallium    = await httpGetWithTimeout(`http://${ipAddress}:8000/api/masterIpAddress/${channel.name}`,     { timeout: 10000, type: 'text' })
                 currentBroadcastDay = await httpGetWithTimeout(`http://${ipAddress}:8000/api/currentBroadcastDay/${channel.name}`, { timeout: 10000, type: 'text' })
                 galliumEvents       = await httpGetWithTimeout(`http://${ipAddress}:8000/api/epgFull/${channel.name}`,             { timeout: 10000, type: 'json' })
             } catch (err) {
-                tsConsoleLog(`WARNING: Failed to get LiveEPG information for ${channel.name} from ${appInfo.liveSchedule_ipAddress[i]}`)
+                tsConsoleLog(`WARNING: Failed to get live schedule information for ${channel.name} from ${ipAddress}`)
                 // console.log(err)
             }
 
@@ -49,6 +47,8 @@ async function validatePlaylists(): Promise<void> {
                 tsConsoleLog(`ERROR: galliumEvents = ${JSON.stringify(galliumEvents)}`)
                 galliumEvents = []
             }
+
+            if (galliumEvents.length > 0) break // We have a list of events, so there is no need to try the backup
         }
 
         // ----------------------------------------------------------------------------------------------------
