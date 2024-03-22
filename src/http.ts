@@ -1,5 +1,5 @@
-const fetch = require("node-fetch")
-const AbortController = require("abort-controller")
+import fetch from 'node-fetch'
+import AbortController from 'abort-controller'
 
 async function httpGetWithTimeout(url: string, options: any): Promise<any> {
     const { timeout = 10000, xApiKey, user, password, type } = options
