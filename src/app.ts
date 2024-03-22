@@ -34,21 +34,19 @@ async function validatePlaylists(): Promise<void> {
         let currentBroadcastDay = dayjs().format('YYYY-MM-DD') // Default
 
         for (let i = 0; i < appInfo.liveSchedule_ipAddress.length && galliumEvents.length === 0; i++) {
-            const cmdIpAddressGallium = `http://${appInfo.liveSchedule_ipAddress[i]}:8000/api/masterIpAddress/${channel.name}`
-            const cmdBroadcastDay     = `http://${appInfo.liveSchedule_ipAddress[i]}:8000/api/currentBroadcastDay/${channel.name}`
-            const commandEpgFull      = `http://${appInfo.liveSchedule_ipAddress[i]}:8000/api/epgFull/${channel.name}`
+            const ipAddress = appInfo.liveSchedule_ipAddress[i]
 
             try {
-                ipAddressGallium    = await httpGetWithTimeout(cmdIpAddressGallium, { timeout: 10000, type: 'text' })
-                currentBroadcastDay = await httpGetWithTimeout(cmdBroadcastDay, { timeout: 10000, type: 'text' })
-                galliumEvents       = await httpGetWithTimeout(commandEpgFull, { timeout: 10000, type: 'json' })
+                ipAddressGallium    = await httpGetWithTimeout(`http://${ipAddress}:8000/api/masterIpAddress/${channel.name}`,     { timeout: 10000, type: 'text' })
+                currentBroadcastDay = await httpGetWithTimeout(`http://${ipAddress}:8000/api/currentBroadcastDay/${channel.name}`, { timeout: 10000, type: 'text' })
+                galliumEvents       = await httpGetWithTimeout(`http://${ipAddress}:8000/api/epgFull/${channel.name}`,             { timeout: 10000, type: 'json' })
             } catch (err) {
                 tsConsoleLog(`WARNING: Failed to get LiveEPG information for ${channel.name} from ${appInfo.liveSchedule_ipAddress[i]}`)
                 // console.log(err)
             }
 
             if (Array.isArray(galliumEvents) === false) {
-                tsConsoleLog(commandEpgFull + ' - ' + galliumEvents)
+                tsConsoleLog(`ERROR: galliumEvents = ${JSON.stringify(galliumEvents)}`)
                 galliumEvents = []
             }
         }
