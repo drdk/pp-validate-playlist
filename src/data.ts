@@ -4,7 +4,7 @@ const galliumBackgroundColor = '#e6e6ff'
 type AppInfo = {
     readonly loggingPath: string,
     readonly monitoringPath: string,
-    readonly liveEpgApiIpAddress: string[],
+    readonly liveSchedule_ipAddress: string[],
     readonly channel: Channel[],
     readonly tableHeader: TableHeader[],
 }
@@ -22,7 +22,7 @@ type TableHeader = {
 const appInfo: AppInfo = {
     loggingPath: '\\\\pp01\\system$\\Logs\\pp-validate-playlist\\',
     monitoringPath: '\\\\pp01\\system$\\Monitoring\\pp-validate-playlist\\',
-    liveEpgApiIpAddress: [
+    liveSchedule_ipAddress: [
         '10.117.120.254', // SK1 - main
         '10.117.120.201', // SK2 - backup
     ],
