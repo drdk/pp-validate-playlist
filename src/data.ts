@@ -10,7 +10,7 @@ type AppInfo = {
 }
 
 type Channel = {
-    readonly name: 'DR1' | 'DR2' | 'TVR' | 'TSK' | 'EVA' | 'EVB' | 'EVC',
+    readonly name: 'DR1' | 'DR2' | 'TVR' | 'TSK' | 'EVA' | 'EVB' | 'EVC' | 'EVD' | 'EVE',
 }
 
 type TableHeader = {
@@ -48,6 +48,12 @@ const appInfo: AppInfo = {
         {
             name: 'EVC',
         },
+        // {
+        //     name: 'EVD',
+        // },
+        // {
+        //     name: 'EVE',
+        // },
     ],
     // Enable parameters to see in the table
     tableHeader: [
