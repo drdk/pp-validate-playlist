@@ -1,5 +1,5 @@
-const wonBackgroundColor     = '#e6ffe6';
-const galliumBackgroundColor = '#e6e6ff';
+const wonBackgroundColor     = '#e6ffe6'
+const galliumBackgroundColor = '#e6e6ff'
 
 type AppInfo = {
     readonly loggingPath: string,
@@ -79,7 +79,7 @@ const appInfo: AppInfo = {
         {name: 'galliumStartMode',     header: 'Start Mode',      backgroundColor: galliumBackgroundColor},
         {name: 'galliumRouterSource',  header: 'Source',          backgroundColor: galliumBackgroundColor},
     ],
-};
+}
 
 enum event_type {
     unknown  = 0x0000,  
@@ -124,4 +124,4 @@ type Item = {
     durationDiff         ? : string,
 }
 
-export { appInfo, event_type, Item };
+export { appInfo, event_type, Item }
